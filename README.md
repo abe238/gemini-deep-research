@@ -10,7 +10,7 @@ Perfect for deep dives into technical topics, market analysis, competitor resear
 
 ## ✨ Features
 
-- 🧠 **Autonomous Planning** - Leverages Gemini 3 Pro to create detailed research plans
+- 🧠 **Autonomous Planning** - Leverages **Gemini 3 Flash Preview** (with fallback to 2.0) to create detailed research plans
 - 📚 **Deep Research** - Executes multi-step research using Google Search and internal reasoning
 - 🔄 **Auto-Polling** - Handles long-running background tasks with automatic status updates
 - ⚡ **Resilient** - Auto-recovers from transient network issues during polling
@@ -66,10 +66,11 @@ gemini-research
 ```
 
 The CLI will:
-1.  Initialize the Deep Research Agent.
-2.  Start the research process in the background.
-3.  Poll for progress (research can take 10+ minutes).
-4.  Save the final report as a Markdown file (e.g., `report-future-of-quantum-computing-in-2025-1734590000.md`).
+1.  Generate a research plan for your review (Yes/No to proceed).
+2.  Initialize the Deep Research Agent.
+3.  Start the research process in the background.
+4.  Poll for progress (research can take 10+ minutes).
+5.  Save the final report as a Markdown file.
 
 ## ⚙️ Configuration Options
 

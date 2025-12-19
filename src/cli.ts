@@ -7,7 +7,7 @@ import fs from "fs/promises";
 import path from "path";
 import readline from "readline/promises";
 import { stdin as input, stdout as output } from "process";
-import { createInteraction, getInteraction } from "./api.js";
+import { createInteraction, generateContent, getInteraction } from "./api.js";
 
 const program = new Command();
 
@@ -29,13 +29,44 @@ program
                 return;
             }
 
-            // Step 1: Execute Research
+            // Step 1: Generate Plan
+            const planSpinner = ora("Generating research plan...").start();
+            let plan: string;
+            try {
+                // Use a standard Gemini model to quick-sketch a plan
+                plan = await generateContent(`Create a detailed research plan for: "${topic}". 
+          The plan should break down the research into key areas and questions. 
+          Keep it concise but comprehensive enough for an autonomous agent.`);
+                planSpinner.succeed(chalk.green("Research Plan Generated:"));
+            } catch (e: any) {
+                planSpinner.fail(chalk.red("Failed to generate plan: " + e.message));
+                console.log(chalk.yellow("Proceeding with raw topic..."));
+                plan = topic;
+            }
+
+            console.log(chalk.gray("----------------------------------------"));
+            console.log(plan);
+            console.log(chalk.gray("----------------------------------------"));
+
+            // Step 2: Confirm
+            const rl = readline.createInterface({ input, output });
+            const answer = await rl.question(chalk.yellow("Proceed with this research plan? (Y/n): "));
+            rl.close();
+
+            if (answer.toLowerCase() === "n") {
+                console.log(chalk.blue("Aborted."));
+                return;
+            }
+
+            // Step 3: Execute Research
             const startSpinner = ora("Initializing Deep Research Agent...").start();
             let interactionId: string | undefined;
 
             try {
-                const researchInput = `Research topic: "${topic}".\n\nCreate a research plan and then execute it comprehensively.`;
+                // Pass the refined plan to the Deep Research Agent
+                const researchInput = `Execute the following research plan:\n\n${plan}`;
                 const result = await createInteraction(researchInput);
+
                 // Extract ID
                 if (result.name) interactionId = result.name;
                 else if (result.id) interactionId = result.id;
@@ -50,11 +81,11 @@ program
                 return;
             }
 
-            // Step 4: Poll
+            // Step 3: Poll
             const pollSpinner = ora("Researching (this may take 10+ minutes)...").start();
             let finalReport = "";
 
-            if (!interactionId) return; // Should not happen
+            if (!interactionId) return;
 
             while (true) {
                 await new Promise(r => setTimeout(r, 10000)); // Poll every 10s
@@ -74,21 +105,14 @@ program
                     } else if (statusData.status === "failed" || statusData.status === "FAILED") {
                         pollSpinner.fail(chalk.red("Research Failed: " + JSON.stringify(statusData.error || "Unknown error")));
                         return;
-                    } else {
-                        // Update spinner text optionally?
-                        // pollSpinner.text = `Researching... Status: ${statusData.status}`;
                     }
                 } catch (e: any) {
-                    // If polling fails transiently, just log and continue
-                    // But if it's permanent, we might loop forever. 
-                    // For now, assume transient network issues shouldn't crash it.
-                    // console.error(chalk.red("Polling error: " + e.message));
+                    // Ignore transient errors
                 }
             }
 
-            // Step 5: Save Report
+            // Step 4: Save Report
             if (finalReport) {
-                // Sanitize filename: remove non-alphanumeric/dash, collapse dashes, trim
                 const slug = topic.toLowerCase()
                     .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanum with dash
                     .replace(/^-+|-+$/g, "")     // Trim leading/trailing dashes
