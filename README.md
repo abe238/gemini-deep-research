@@ -106,6 +106,9 @@ gemini-deep-research/
 ## 🤝 Contributing
 
 Contributions are welcome! Please run the build script before submitting a PR.
+```bash
+npm run build
+```
 
 ## 📄 License
 
