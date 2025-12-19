@@ -27,18 +27,22 @@ Build a CLI tool to interact with Gemini's Deep Research Agent, allowing users t
 
 ## Steps
 1. [x] **Verify API**: Ensure `test_deep_research.ts` works.
-2. [ ] **Setup Project**: existing `package.json` has `commander`, `ora`, `chalk`, `dotenv`.
-3. [ ] **CLI Skeleton**: Create `src/cli.ts` with `commander`.
-4. [ ] **API Client**: Refactor API logic into `src/client.ts` for reuse.
-5. [ ] **Implement Flow**:
+2. [x] **Setup Project**: existing `package.json` has `commander`, `ora`, `chalk`, `dotenv`.
+3. [x] **CLI Skeleton**: Create `src/cli.ts` with `commander`.
+4. [x] **API Client**: Refactor API logic into `src/cli.ts` (Merged into CLI for simplicity).
+5. [x] **Implement Flow**:
    - `getResearchPlan(topic)`
    - `executeResearch(topic/plan)`
    - `pollLoop(interactionId)`
-6. [ ] **Save Report**: Implement file saving logic.
-7. [ ] **Refinement**: Add error handling, timeouts, and better UX.
+6. [x] **Save Report**: Implement file saving logic.
+7. [x] **Refinement**: Add error handling, timeouts, and better UX.
 
 ## Constraints
-- "The Deep Research Agent currently doesn't support human approved planning or structured outputs." -> We workaround this by making "Planning" a separate prompt interaction if possible, or just using the 20-min research directly if the user prefers. The user requested "review the generated research plan", so we *must* implement the two-step prompt approach.
+- "The Deep Research Agent currently doesn't support human approved planning or structured outputs." 
+  - **Status: RESOLVED**. We successfully implemented the workaround by creating a two-step process: 
+    1. Generate a plan using `gemini-3-flash-preview`.
+    2. Ask the user to confirm.
+    3. Pass the confirmed plan as input to the `deep-research-pro` agent.
 
 ## Note on Docs
 - Using `docs/deep-research.md.txt` as the source of truth for API usage.
