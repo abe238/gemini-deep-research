@@ -14,7 +14,7 @@ Perfect for deep dives into technical topics, market analysis, competitor resear
 
 ## ✨ Features
 
-- 🧠 **Autonomous Planning** - Leverages **Gemini 3 Flash Preview** (with fallback to 2.0) to create detailed research plans
+- 🧠 **Autonomous Planning** - Leverages **Gemini 3 Flash Preview** (with fallback to 2.0) to create detailed research plans before calling Deep Research Agent, this mimics the Gemini Web experience
 - 📚 **Deep Research** - Executes multi-step research using Google Search and internal reasoning
 - 🔄 **Auto-Polling** - Handles long-running background tasks with automatic status updates
 - ⚡ **Resilient** - Auto-recovers from transient network issues during polling
