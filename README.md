@@ -30,9 +30,10 @@ Perfect for deep dives into technical topics, market analysis, competitor resear
 
 ### Installation
 
+
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/yourusername/gemini-deep-research.git
+git clone https://github.com/abe238/gemini-deep-research.git
 cd gemini-deep-research
 ```
 
@@ -90,9 +91,7 @@ gemini-deep-research/
 ├── dist/                  # Compiled JavaScript files
 ├── docs/                  # Documentation
 ├── src/
-│   ├── api.ts             # Gemini API client
-│   ├── cli.ts             # Main CLI logic & UI
-│   └── test_*.ts          # Test scripts
+│   └── cli.ts             # Main CLI & API logic
 ├── .env                   # API Key configuration
 ├── package.json           # Dependencies & Scripts
 └── README.md              # This documentation
