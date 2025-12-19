@@ -33,10 +33,13 @@ program
             const planSpinner = ora("Generating research plan...").start();
             let plan: string;
             try {
-                // Use a standard Gemini model to quick-sketch a plan
-                plan = await generateContent(`Create a detailed research plan for: "${topic}". 
+                // Sanitize/Structure input to prevent basic prompt injection
+                const safeTopic = topic.replace(/"/g, '\\"');
+                const prompt = `Create a detailed research plan for: "${safeTopic}". 
           The plan should break down the research into key areas and questions. 
-          Keep it concise but comprehensive enough for an autonomous agent.`);
+          Keep it concise but comprehensive enough for an autonomous agent.`;
+
+                plan = await generateContent(prompt);
                 planSpinner.succeed(chalk.green("Research Plan Generated:"));
             } catch (e: any) {
                 planSpinner.fail(chalk.red("Failed to generate plan: " + e.message));
@@ -84,10 +87,18 @@ program
             // Step 3: Poll
             const pollSpinner = ora("Researching (this may take 10+ minutes)...").start();
             let finalReport = "";
+            const startTime = Date.now();
+            const TIMEOUT_MS = 60 * 60 * 1000; // 1 hour timeout
 
             if (!interactionId) return;
 
             while (true) {
+                // Check timeout
+                if (Date.now() - startTime > TIMEOUT_MS) {
+                    pollSpinner.fail(chalk.red("Research timed out after 60 minutes."));
+                    break;
+                }
+
                 await new Promise(r => setTimeout(r, 10000)); // Poll every 10s
 
                 try {
@@ -107,7 +118,13 @@ program
                         return;
                     }
                 } catch (e: any) {
-                    // Ignore transient errors
+                    // Check for fatal errors (4xx) vs transient (5xx)
+                    if (e.status && e.status >= 400 && e.status < 500) {
+                        pollSpinner.fail(chalk.red(`Fatal API Error (${e.status}): ` + e.message));
+                        return; // Stop polling on 4xx
+                    }
+                    // For others (network or 5xx), we retry
+                    pollSpinner.text = `Researching (retrying after error: ${e.message})...`;
                 }
             }
 
@@ -117,13 +134,16 @@ program
                     .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanum with dash
                     .replace(/^-+|-+$/g, "")     // Trim leading/trailing dashes
                     .substring(0, 50);           // Truncate
-                const filename = `report-${slug}-${Date.now()}.md`;
+
+                const safeSlug = slug || "untitled-research";
+                const filename = `report-${safeSlug}-${Date.now()}.md`;
                 const filePath = path.join(process.cwd(), filename);
 
                 await fs.writeFile(filePath, finalReport);
                 console.log(chalk.green(`\nReport saved to: ${filename}`));
                 console.log(chalk.gray("----------------------------------------"));
-            } else {
+            } else if (Date.now() - startTime <= TIMEOUT_MS) {
+                // Only showing warning if we didn't timeout
                 console.log(chalk.yellow("No report content found."));
             }
 

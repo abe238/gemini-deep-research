@@ -104,10 +104,7 @@ gemini-deep-research/
 
 Contributions are welcome! Please run the build script before submitting a PR.
 
-```bash
-npm run build
-```
-
 ## 📄 License
 
 This project is licensed under the ISC License.
+

@@ -21,26 +21,38 @@ export interface InteractionResponse {
     }>;
 }
 
-export async function createInteraction(input: string, agent: string = DEEP_RESEARCH_AGENT, background: boolean = true): Promise<InteractionResponse> {
-    const url = `${BASE_URL}?key=${API_KEY}`;
+class ApiError extends Error {
+    constructor(message: string, public status: number) {
+        super(message);
+        this.name = "ApiError";
+    }
+}
 
+async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+    const headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": API_KEY!,
+        ...options.headers,
+    };
+
+    return fetch(url, { ...options, headers });
+}
+
+export async function createInteraction(input: string, agent: string = DEEP_RESEARCH_AGENT, background: boolean = true): Promise<InteractionResponse> {
     const body = {
         input,
         agent,
         background
     };
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(BASE_URL, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
         body: JSON.stringify(body)
     });
 
     if (!response.ok) {
         const text = await response.text();
-        throw new Error(`Failed to create interaction: ${response.status} ${response.statusText} - ${text}`);
+        throw new ApiError(`Failed to create interaction: ${response.status} ${response.statusText} - ${text}`, response.status);
     }
 
     return await response.json();
@@ -48,33 +60,32 @@ export async function createInteraction(input: string, agent: string = DEEP_RESE
 
 export async function generateContent(prompt: string, model: string = "gemini-3-flash-preview"): Promise<string> {
     const tryModel = async (modelName: string) => {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
         const body = {
             contents: [{ parts: [{ text: prompt }] }]
         };
 
-        const response = await fetch(url, {
+        const response = await fetchWithAuth(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
         });
 
         if (!response.ok) {
             const text = await response.text();
-            throw new Error(`Failed to generate content with ${modelName}: ${response.status} ${response.statusText} - ${text}`);
+            throw new ApiError(`Failed to generate content with ${modelName}: ${response.status} ${response.statusText} - ${text}`, response.status);
         }
 
         const data = await response.json();
         if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
             return data.candidates[0].content.parts[0].text;
         }
-        throw new Error(`No content in response from ${modelName}`);
+        throw new ApiError(`No content in response from ${modelName}`, 500);
     };
 
     try {
         return await tryModel(model);
-    } catch (e) {
-        if (model === "gemini-3-flash-preview") {
+    } catch (e: any) {
+        if (model === "gemini-3-flash-preview" && (e.status === 404 || e.status >= 500)) {
             console.warn(`Fallback: ${model} failed, trying gemini-2.0-flash...`);
             return await tryModel("gemini-2.0-flash");
         }
@@ -82,23 +93,16 @@ export async function generateContent(prompt: string, model: string = "gemini-3-
     }
 }
 
-
-
 export async function getInteraction(interactionId: string): Promise<InteractionResponse> {
-    // URL typically: https://generativelanguage.googleapis.com/v1beta/interactions/ID?key=...
-    // Note: If interactionId is the full resource name (interactions/...), we can use it directly?
-    // The docs say: GET .../interactions/INTERACTION_ID
-    // My test script confirmed that `id` is returned as "v1_..." or similar, or a resource name. 
-    // Wait, in my test script output (Step 47): "id": "v1_ChdV..."
-    // So we invoke `${BASE_URL}/${interactionId}?key=${API_KEY}`.
+    // Check if interactionId is already a full resource name
+    const finalId = interactionId.includes("/") ? interactionId.split("/").pop() : interactionId;
+    const url = `${BASE_URL}/${finalId}`;
 
-    const url = `${BASE_URL}/${interactionId}?key=${API_KEY}`;
-
-    const response = await fetch(url);
+    const response = await fetchWithAuth(url);
 
     if (!response.ok) {
         const text = await response.text();
-        throw new Error(`Failed to get interaction: ${response.status} ${response.statusText} - ${text}`);
+        throw new ApiError(`Failed to get interaction: ${response.status} ${response.statusText} - ${text}`, response.status);
     }
 
     return await response.json();
