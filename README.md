@@ -3,6 +3,10 @@
 [![License: ISC](https://img.shields.io/badge/License-ISC-yellow.svg)](https://opensource.org/licenses/ISC)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-blue.svg)](#installation)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)](https://www.typescriptlang.org/)
+[![GitHub stars](https://img.shields.io/github/stars/abe238/gemini-deep-research?style=social)](https://github.com/abe238/gemini-deep-research/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/abe238/gemini-deep-research?style=social)](https://github.com/abe238/gemini-deep-research/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/abe238/gemini-deep-research)](https://github.com/abe238/gemini-deep-research/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/abe238/gemini-deep-research)](https://github.com/abe238/gemini-deep-research/commits/main)
 
 **Deep Research Agent CLI** - A powerful command-line interface for Gemini's Deep Research Agent, capable of autonomously planning, executing, and reporting on complex research topics.
 
