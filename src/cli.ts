@@ -130,18 +130,46 @@ program
     .description("CLI tool for Gemini Deep Research")
     .version("1.0.0")
     .argument("[topic]", "Topic to research")
-    .action(async (topic) => {
+    .option("-f, --file <path>", "Read topic from a file")
+    .action(async (topic, options) => {
         try {
+            // Priority 1: Read from file flag
+            if (options.file) {
+                try {
+                    topic = await fs.readFile(path.resolve(process.cwd(), options.file), "utf-8");
+                } catch (e: any) {
+                    console.error(chalk.red(`Failed to read file: ${e.message}`));
+                    process.exit(1);
+                }
+            }
+
+            // Priority 2: Check for piped input (if no topic & not TTY)
+            if (!topic && !input.isTTY) {
+                const rl = readline.createInterface({ input, output: process.stdout, terminal: false });
+                let data = "";
+                for await (const line of rl) {
+                    data += line + "\n";
+                }
+                topic = data.trim();
+            }
+
+            // Priority 3: Interactive Prompt
             if (!topic) {
                 const rl = readline.createInterface({ input, output });
-                topic = await rl.question(chalk.blue("Enter research topic: "));
+                console.log(chalk.blue("Enter research topic (press Enter to submit):"));
+                console.log(chalk.dim("(For multi-line input, suggest using a file with -f)"));
+                topic = await rl.question(chalk.hex('#FFD700')("> "));
                 rl.close();
             }
 
-            if (!topic) {
+            if (!topic || !topic.trim()) {
                 console.log(chalk.red("No topic provided. Exiting."));
                 return;
             }
+
+            // Security: Sanitize input to remove potential control character attacks
+            // while preserving valid multilingual and formatting characters.
+            topic = topic.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 
             // Step 1: Generate Plan
             const planSpinner = ora("Generating research plan...").start();

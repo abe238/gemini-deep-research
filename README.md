@@ -66,8 +66,17 @@ npm link
 # Research a specific topic directly
 gemini-research "The future of quantum computing in 2025"
 
+# Research from a file (Best for long, complex prompts)
+gemini-research -f prompt.txt
+
+# Research from piped input
+cat prompt.txt | gemini-research
+
 # Run in interactive mode
 gemini-research
+
+# Show help
+gemini-research --help
 ```
 
 The CLI will:
@@ -79,9 +88,12 @@ The CLI will:
 
 ## ⚙️ Configuration Options
 
-| Option | Description |
+| Flag/Option | Description |
 |--------|-------------|
 | `topic` | The research topic (pass as first argument) |
+| `-f, --file` | Read the research topic from a local file |
+| `-V, --version` | Output the version number |
+| `-h, --help` | Display help for command |
 | `.env` | File to store your `GEMINI_API_KEY` |
 
 ## 🏗️ Project Structure
