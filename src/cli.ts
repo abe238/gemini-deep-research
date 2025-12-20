@@ -5,13 +5,16 @@ import chalk from "chalk";
 import ora from "ora";
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
 import readline from "readline/promises";
 import { stdin as input, stdout as output } from "process";
 import dotenv from "dotenv";
 
 // --- API Logic ---
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, "..", ".env") });
 
 const API_KEY = process.env.GEMINI_API_KEY;
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/interactions";
