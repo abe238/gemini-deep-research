@@ -131,6 +131,7 @@ program
     .version("1.0.0")
     .argument("[topic]", "Topic to research")
     .option("-f, --file <path>", "Read topic from a file")
+    .option("-y, --yes", "Auto-approve the research plan without confirmation")
     .action(async (topic, options) => {
         try {
             // Priority 1: Read from file flag
@@ -193,14 +194,18 @@ program
             console.log(plan);
             console.log(chalk.gray("----------------------------------------"));
 
-            // Step 2: Confirm
-            const rl = readline.createInterface({ input, output });
-            const answer = await rl.question(chalk.yellow("Proceed with this research plan? (Y/n): "));
-            rl.close();
+            // Step 2: Confirm (skip if --yes flag)
+            if (!options.yes) {
+                const rl = readline.createInterface({ input, output });
+                const answer = await rl.question(chalk.yellow("Proceed with this research plan? (Y/n): "));
+                rl.close();
 
-            if (answer.toLowerCase() === "n") {
-                console.log(chalk.blue("Aborted."));
-                return;
+                if (answer.toLowerCase() === "n") {
+                    console.log(chalk.blue("Aborted."));
+                    return;
+                }
+            } else {
+                console.log(chalk.green("Auto-approving research plan..."));
             }
 
             // Step 3: Execute Research

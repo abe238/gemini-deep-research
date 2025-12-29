@@ -21,6 +21,7 @@ Perfect for deep dives into technical topics, market analysis, competitor resear
 - 📝 **Markdown Export** - Saves formatted reports directly to your local machine
 - 🛡️ **Safe Filenames** - Automatically sanitizes output filenames for cross-platform compatibility
 - 🚦 **Interactive CLI** - Simple interactive mode or direct command-line arguments
+- 🎯 **One-Shot Mode** - Skip confirmation prompts with `-y` flag for automation scripts
 
 ## 📦 Quick Start
 
@@ -66,8 +67,14 @@ npm link
 # Research a specific topic directly
 gemini-research "The future of quantum computing in 2025"
 
+# One-shot mode (auto-approve plan, no confirmation prompt)
+gemini-research -y "The future of quantum computing in 2025"
+
 # Research from a file (Best for long, complex prompts)
 gemini-research -f prompt.txt
+
+# Combine file input with auto-approve for fully automated research
+gemini-research -y -f prompt.txt
 
 # Research from piped input
 cat prompt.txt | gemini-research
@@ -92,6 +99,7 @@ The CLI will:
 |--------|-------------|
 | `topic` | The research topic (pass as first argument) |
 | `-f, --file` | Read the research topic from a local file |
+| `-y, --yes` | Auto-approve the research plan without confirmation (one-shot mode) |
 | `-V, --version` | Output the version number |
 | `-h, --help` | Display help for command |
 | `.env` | File to store your `GEMINI_API_KEY` |
